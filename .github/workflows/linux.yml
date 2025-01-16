@@ -2,14 +2,18 @@ name: GNAT Linux
 on:
   #schedule:
   #  - cron:  '0 0 * * *'
-  #push:
+  push:
   pull_request:
 
 
 jobs:
   gnat:
+    strategy:
+      matrix:
+        runner: [ warp-ubuntu-2204-arm64-2x ]
+
     name: GNAT Linux
-    runs-on: ubuntu-20.04
+    runs-on: ${{ matrix.runner }}
     steps:
     - name: Checkout Project
       uses: actions/checkout@v2
@@ -48,13 +52,13 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # for GitHub CLI tool
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
         name: anod-artifacts
         path: out_artifacts/*
         retention-days: 1
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
         name: release-packages
         path: sbx/*/release_package*/install/*
@@ -64,7 +68,11 @@ jobs:
 
   gprbuild_gnatcov:
     name: GPRbuild and GNATcov
-    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        runner: [ warp-ubuntu-2204-arm64-2x ]
+
+    runs-on: ${{ matrix.runner }}
     steps:
     - name: Checkout Project
       uses: actions/checkout@v2
@@ -95,7 +103,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # for GitHub CLI tool
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
         name: release-packages
         path: sbx/*/release_package*/install/*
@@ -107,9 +115,12 @@ jobs:
     strategy:
       matrix:
         target: ["arm-elf", "riscv64-elf", "avr-elf"]
+        runner: [ ubuntu-20.04 ]
+
+
     name: GNAT ${{ matrix.target }}-linux
     needs: gnat
-    runs-on: ubuntu-20.04
+    runs-on: ${{ matrix.runner }}
     steps:
     - name: Checkout Project
       uses: actions/checkout@v2
@@ -140,7 +151,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # for GitHub CLI tool
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
         name: release-packages
         path: sbx/*/release_package*/install/*
@@ -152,8 +163,9 @@ jobs:
       matrix:
         ocaml-compiler:
           - 4.12.1
+        runner: [ warp-ubuntu-2204-arm64-2x ]
 
-    runs-on: ubuntu-20.04
+    runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -180,7 +192,7 @@ jobs:
       - run: git log --format="%H" -n 1 > /tmp/why3install/why3-version.txt
 
       - name: Upload the build artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: why3
           path: /tmp/why3install
@@ -191,7 +203,9 @@ jobs:
       matrix:
         ocaml-compiler:
           - 4.12.1
-    runs-on: ubuntu-20.04
+        runner: [ warp-ubuntu-2204-arm64-2x ]
+
+    runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -209,7 +223,7 @@ jobs:
       - run: git log --format="%H" -n 1 > /tmp/alt-ergo-install/alt-ergo-version.txt
 
       - name: Upload the build artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: alt-ergo
           path: /tmp/alt-ergo-install
@@ -218,7 +232,10 @@ jobs:
   spark:
     name: spark
     needs: [why3, alt_ergo]
-    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        runner: [ warp-ubuntu-2204-arm64-2x ]
+    runs-on: ${{ matrix.runner }}
     steps:
     - name: Checkout Project
       uses: actions/checkout@v2
@@ -251,7 +268,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # for GitHub CLI tool
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
         name: release-packages
         path: sbx/*/release_package*/install/*
